@@ -40,6 +40,12 @@
       </property>
       <item>
        <widget class="QLCDNumber" name="displayMinesLeft">
+        <property name="minimumSize">
+         <size>
+          <width>80</width>
+          <height>0</height>
+         </size>
+        </property>
         <property name="styleSheet">
          <string notr="true">color: #c00;</string>
         </property>
@@ -110,6 +116,12 @@
       </item>
       <item>
        <widget class="QLCDNumber" name="displayTime">
+        <property name="minimumSize">
+         <size>
+          <width>80</width>
+          <height>0</height>
+         </size>
+        </property>
         <property name="styleSheet">
          <string notr="true">color: #c00;</string>
         </property>
@@ -146,6 +158,9 @@
           <height>0</height>
          </size>
         </property>
+        <property name="focusPolicy">
+         <enum>Qt::NoFocus</enum>
+        </property>
         <property name="frame">
          <bool>true</bool>
         </property>
@@ -176,6 +191,9 @@
         <property name="enabled">
          <bool>false</bool>
         </property>
+        <property name="focusPolicy">
+         <enum>Qt::NoFocus</enum>
+        </property>
         <property name="minimum">
          <number>8</number>
         </property>
@@ -199,6 +217,9 @@
         <property name="enabled">
          <bool>false</bool>
         </property>
+        <property name="focusPolicy">
+         <enum>Qt::NoFocus</enum>
+        </property>
         <property name="minimum">
          <number>8</number>
         </property>
@@ -221,6 +242,9 @@
        <widget class="QSpinBox" name="spinBoxMines">
         <property name="enabled">
          <bool>false</bool>
+        </property>
+        <property name="focusPolicy">
+         <enum>Qt::NoFocus</enum>
         </property>
         <property name="minimum">
          <number>10</number>
