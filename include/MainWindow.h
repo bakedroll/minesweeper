@@ -65,7 +65,6 @@ private:
 
     using Coordinate = std::pair<int, int>;
     using FieldFunction = std::function<void(const Coordinate&)>;
-    using CancellableFieldFunction = std::function<bool(const Coordinate&)>;
     using CoordinateSet = std::set<Coordinate>;
 
     std::unique_ptr<Ui::MainWindow> m_ui;
@@ -83,7 +82,7 @@ private:
     void uncoverAll();
     void checkWinningCondition();
 
-    void forEachField(CancellableFieldFunction func);
+    void forEachField(FieldFunction func);
     void forEachAdjacentField(const Coordinate& coord, FieldFunction func);
 
     int countMinesAdjacentTo(const Coordinate& coord);
@@ -113,6 +112,7 @@ private:
 
     bool m_minesPlaced;
     int m_minesQuantity;
+    int m_numClicks;
 
     QTimer m_timer;
 

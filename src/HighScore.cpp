@@ -15,6 +15,11 @@ QString getHighScoreFilename()
     return "./highscore.txt";
 }
 
+int getMaxHighscoreEntries()
+{
+    return 10;
+}
+
 QString getStringFromDifficultyMode(const HighScore::DifficultyMode& mode)
 {
     switch (mode)
@@ -55,7 +60,7 @@ void HighScore::loadScore()
         auto line = stream.readLine();
         auto elements = line.split(';');
 
-        if (elements.length() < 5)
+        if (elements.length() < 7)
         {
             continue;
         }
@@ -63,9 +68,11 @@ void HighScore::loadScore()
         ScoreData data;
         data.name = elements[0];
         data.score3bv = elements[1].toInt();
-        data.score3bvs = elements[2].toInt();
-        data.time = elements[3].toInt();
-        data.mode = static_cast<DifficultyMode>(elements[4].toInt());
+        data.score3bvPerTime = elements[2].toFloat();
+        data.score3bvPerClicks = elements[3].toFloat();
+        data.totalScore = elements[4].toFloat();
+        data.time = elements[5].toInt();
+        data.mode = static_cast<DifficultyMode>(elements[6].toInt());
 
         m_topList.push_back(data);
     }
@@ -84,10 +91,12 @@ void HighScore::saveScore()
     QTextStream stream(&file);
     for (const auto& data : m_topList)
     {
-        auto line = QString("%1;%2;%3;%4;%5\n")
+        auto line = QString("%1;%2;%3;%4;%5;%6;%7\n")
             .arg(data.name)
             .arg(data.score3bv)
-            .arg(data.score3bvs)
+            .arg(data.score3bvPerTime)
+            .arg(data.score3bvPerClicks)
+            .arg(data.totalScore)
             .arg(data.time)
             .arg(underlying(data.mode));
 
@@ -97,14 +106,14 @@ void HighScore::saveScore()
     file.close();
 }
 
-bool HighScore::hasReachedTopThree(int score3bv)
+bool HighScore::hasReachedTopThree(int totalScore)
 {
-    if (m_topList.size() < 3)
+    if (m_topList.size() < getMaxHighscoreEntries())
     {
         return true;
     }
 
-    return (m_topList.rbegin()->score3bv < score3bv);
+    return (m_topList.rbegin()->totalScore < totalScore);
 }
 
 void HighScore::addScoreData(const ScoreData& data)
@@ -112,12 +121,13 @@ void HighScore::addScoreData(const ScoreData& data)
     m_topList.push_back(data);
     std::sort(m_topList.begin(), m_topList.end(), [](const ScoreData& lhs, const ScoreData& rhs)
     {
-        return lhs.score3bv > rhs.score3bv;       
+        return lhs.totalScore > rhs.totalScore;       
     });
 
-    if (m_topList.size() > 3)
+    auto maxEntries = getMaxHighscoreEntries();
+    if (m_topList.size() > maxEntries)
     {
-        m_topList = TopList(m_topList.begin(), m_topList.begin()+3);
+        m_topList = TopList(m_topList.begin(), m_topList.begin()+maxEntries);
     }
 }
 
@@ -126,19 +136,22 @@ void HighScore::displayScore(QWidget* parent)
     QString tableRows;
     for (const auto& data : m_topList)
     {
-        tableRows.append(QString("<tr><td>%1</td><td>%2</td><td>%3</td><td>%4 s</td><td>%5</td></tr>")
+        tableRows.append(QString("<tr><td>%1</td><td><b>%2</b></td><td>%3</td><td>%4</td><td>%5</td><td>%6 s</td><td>%7</td></tr>")
             .arg(data.name)
+            .arg(data.totalScore)
             .arg(data.score3bv)
-            .arg(data.score3bvs)
+            .arg(data.score3bvPerClicks)
+            .arg(data.score3bvPerTime)
             .arg(data.time)
             .arg(getStringFromDifficultyMode(data.mode)));
     }
 
     auto html = QString("<h3><u>Highscore</u></h3><table>" \
-        "<tr><th width=\"100\" align=\"left\">Name</th><th width=\"100\" align=\"left\">3BV score</th>" \
-        "<th width=\"100\" align=\"left\">3BV score/s</th><th width=\"100\" align=\"left\">Time</th>" \
+        "<tr><th width=\"100\" align=\"left\">Name</th><th width=\"100\" align=\"left\"><b>Total score</b></th>" \
+        "<th width=\"100\" align=\"left\">3BV score</th><th width=\"130\" align=\"left\">3BV score / clicks</th>" \
+        "<th width=\"130\" align=\"left\">3BV score / seconds</th><th width=\"100\" align=\"left\">Time</th>" \
         "<th width=\"100\" align=\"left\">Difficulty</th></tr>%1</table>")
         .arg(tableRows);
 
-    QMessageBox::information(parent, "Highscore TOP 3", html);
+    QMessageBox::information(parent, QString("Highscore TOP %1").arg(m_topList.size()), html);
 }

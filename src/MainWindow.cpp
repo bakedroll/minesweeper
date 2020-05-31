@@ -90,6 +90,7 @@ MainWindow::MainWindow(QWidget* parent)
     , m_iconSmileyAngry(":/Resources/smiley_angry_small.png")
     , m_minesPlaced(false)
     , m_minesQuantity(0)
+    , m_numClicks(0)
 {
     m_ui->setupUi(this);
 
@@ -127,6 +128,7 @@ void MainWindow::resetMineField(bool centerWindow)
 {
     setGameState(GameState::Running);
 
+    m_numClicks = 0;
     m_minesPlaced = false;
     m_minesQuantity = m_ui->spinBoxMines->value();
 
@@ -258,8 +260,6 @@ void MainWindow::makeMinefield(const QSize& size)
                 setButtonIcon(m_ui->buttonReset, m_iconSmileyHappy, QSize(64, 64));
             }
         });
-
-        return true;
     });
 }
 
@@ -337,8 +337,12 @@ void MainWindow::checkMineField(const Coordinate& coord)
         return;
     }
 
+    m_numClicks++;
+
     CoordinateSet visited;
     uncoverFieldHint(coord, visited);
+
+    checkWinningCondition();
 }
 
 void MainWindow::toggleMineFieldFlag(const Coordinate& coord)
@@ -458,8 +462,6 @@ void MainWindow::uncoverAll()
         {
             setButtonIcon(field.button, m_iconMineMissed);
         }
-
-        return true;
     });
 
     setGameState(GameState::Failed);
@@ -467,23 +469,28 @@ void MainWindow::uncoverAll()
 
 void MainWindow::checkWinningCondition()
 {
-    auto conditionMet = true;
-    forEachField([this, &conditionMet](const Coordinate& coord)
+    auto conditionAllUncoveredMet = true;
+    auto conditionAllMinesFlaggedMet = true;
+
+    forEachField([this, &conditionAllUncoveredMet, &conditionAllMinesFlaggedMet](const Coordinate& coord)
     {
         auto& field = m_mineFields[coord];
+        auto isCovered = ((field.state == ButtonState::Hidden) || (field.state == ButtonState::Unclear));
         auto isFlagged = (field.state == ButtonState::Flagged);
         auto hasMine = (m_mines.count(coord) > 0);
 
-        if (isFlagged != hasMine)
+        if (!hasMine && isCovered)
         {
-            conditionMet = false;
-            return false;
+            conditionAllUncoveredMet = false;
         }
 
-        return true;
+        if (hasMine && !isFlagged)
+        {
+            conditionAllMinesFlaggedMet = false;
+        }
     });
 
-    if (!conditionMet)
+    if (!conditionAllUncoveredMet && !conditionAllMinesFlaggedMet)
     {
         return;
     }
@@ -491,16 +498,13 @@ void MainWindow::checkWinningCondition()
     setGameState(GameState::Succeeded);
 }
 
-void MainWindow::forEachField(CancellableFieldFunction func)
+void MainWindow::forEachField(FieldFunction func)
 {
     for (auto y = 0; y < m_size.height(); y++)
     {
         for (auto x = 0; x < m_size.width(); x++)
         {
-            if (!func(Coordinate(x, y)))
-            {
-                return;
-            }
+            func(Coordinate(x, y));
         }
     }
 }
@@ -539,9 +543,14 @@ int MainWindow::countMinesAdjacentTo(const Coordinate& coord)
 
 void MainWindow::checkHighScore()
 {
-    auto score3bv = count3BV();
+    auto time = std::max<int>(1, m_ui->displayTime->intValue());
 
-    if (m_highScore.hasReachedTopThree(score3bv))
+    auto score3bv = count3BV();
+    auto score3bvPerTime = static_cast<float>(score3bv) / time;
+    auto score3bvPerClicks = static_cast<float>(score3bv) / m_numClicks;
+    auto totalScore = score3bvPerTime + score3bvPerClicks;
+
+    if (m_highScore.hasReachedTopThree(totalScore))
     {
         QString name;
 
@@ -551,12 +560,12 @@ void MainWindow::checkHighScore()
         }
         while (name.isEmpty());
 
-        auto time = std::max<int>(1, m_ui->displayTime->intValue());
-
         HighScore::ScoreData data;
         data.name = name;
+        data.totalScore = totalScore;
         data.score3bv = score3bv;
-        data.score3bvs = score3bv / time;
+        data.score3bvPerTime = score3bvPerTime;
+        data.score3bvPerClicks = score3bvPerClicks;
         data.time = time;
         data.mode = static_cast<HighScore::DifficultyMode>(m_ui->comboBoxDifficultyMode->currentIndex());
 
@@ -580,15 +589,13 @@ int MainWindow::count3BV()
         {
             if (marked.count(coord) > 0)
             {
-                return true;
+                return;
             }
 
             marked.insert(coord);
             score++;
             floodFillMark(coord, marked);
         }
-
-        return true;
     });
 
     forEachField([this, &marked, &score](const Coordinate& coord)
@@ -597,8 +604,6 @@ int MainWindow::count3BV()
         {
             score++;
         }
-
-        return true;
     });
 
     return score;

@@ -20,7 +20,9 @@ public:
     {
         QString name;
         int score3bv;
-        int score3bvs;
+        float score3bvPerTime;
+        float score3bvPerClicks;
+        float totalScore;
         int time;
         DifficultyMode mode;
     };
@@ -31,7 +33,7 @@ public:
     void loadScore();
     void saveScore();
 
-    bool hasReachedTopThree(int score3bv);
+    bool hasReachedTopThree(int totalScore);
     void addScoreData(const ScoreData& data);
 
     void displayScore(QWidget* parent = nullptr);
