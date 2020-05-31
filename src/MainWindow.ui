@@ -164,26 +164,6 @@
         <property name="frame">
          <bool>true</bool>
         </property>
-        <item>
-         <property name="text">
-          <string>Beginner</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>Intermediate</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>Expert</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>Custom Game</string>
-         </property>
-        </item>
        </widget>
       </item>
       <item>

@@ -5,15 +5,24 @@
 
 #include <vector>
 
-class HighScore
+template <typename T>
+typename std::underlying_type<T>::type underlying(T t)
 {
+    return static_cast<typename std::underlying_type<T>::type>(t);
+}
+
+class HighScore : QObject
+{
+    Q_OBJECT
+
 public:
     enum class DifficultyMode : int
     {
-        Beginner = 0,
-        Intermediate = 1,
-        Expert = 2,
-        CustomGame = 3
+        Beginner,
+        Intermediate,
+        Expert,
+        CustomGame,
+        DifficultyModeCount
     };
 
     struct ScoreData
@@ -45,6 +54,8 @@ public:
     void addScoreData(ScoreData& data);
 
     void displayScore(QWidget* parent = nullptr, HighscoreDisplayMode mode = HighscoreDisplayMode::NoHighlighting);
+
+    static QString getStringFromDifficultyMode(const DifficultyMode& mode);
 
 private:
     using TopList = std::vector<ScoreData>;

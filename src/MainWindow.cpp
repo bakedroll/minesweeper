@@ -96,6 +96,14 @@ MainWindow::MainWindow(QWidget* parent)
 
     setWindowFlags(windowFlags() &(~Qt::WindowMaximizeButtonHint));
 
+    for (auto i=0; i<underlying(HighScore::DifficultyMode::DifficultyModeCount); i++)
+    {
+        m_ui->comboBoxDifficultyMode->addItem(
+            HighScore::getStringFromDifficultyMode(static_cast<HighScore::DifficultyMode>(i)));
+    }
+
+    m_ui->comboBoxDifficultyMode->setCurrentIndex(underlying(HighScore::DifficultyMode::Beginner));
+
     m_timer.setInterval(1000);
     m_timer.setSingleShot(false);
 
@@ -561,7 +569,7 @@ void MainWindow::checkHighScore()
 
         do
         {
-            name = QInputDialog::getText(this, "Highscore", "Please enter your name for the high score:");
+            name = QInputDialog::getText(this, tr("Highscore"), tr("Please enter your name for the high score:"));
         }
         while (name.isEmpty());
 

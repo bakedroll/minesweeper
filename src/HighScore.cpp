@@ -4,12 +4,6 @@
 #include <QTextStream>
 #include <QMessageBox>
 
-template <typename T>
-typename std::underlying_type<T>::type underlying(T t)
-{
-    return static_cast<typename std::underlying_type<T>::type>(t);
-}
-
 QString getHighScoreFilename()
 {
     return "./highscore.txt";
@@ -25,27 +19,9 @@ QString formatHtmlColor(const QString& text, const QColor& color)
     return QString("<span style=\"color:%1;\">%2</span>").arg(color.name()).arg(text);
 }
 
-QString getStringFromDifficultyMode(const HighScore::DifficultyMode& mode)
-{
-    switch (mode)
-    {
-    case HighScore::DifficultyMode::Beginner:
-        return "Beginner";
-    case HighScore::DifficultyMode::Intermediate:
-        return "Intermediate";
-    case HighScore::DifficultyMode::Expert:
-        return "Expert";
-    case HighScore::DifficultyMode::CustomGame:
-        return "Custom game";
-    default:
-        break;
-    };
-
-    return QString();
-}
-
 HighScore::HighScore()
-    : m_lastAddedId(0)
+    : QObject()
+    , m_lastAddedId(0)
 {
     loadScore();
 }
@@ -165,11 +141,40 @@ void HighScore::displayScore(QWidget* parent, HighscoreDisplayMode mode)
             .arg(formatHtmlColor(getStringFromDifficultyMode(data.mode), color)));
     }
 
-    auto html = QString("<h3><u>Highscore</u></h3><table>" \
-        "<tr><th width=\"100\" align=\"left\">Name</th><th width=\"100\" align=\"left\"><b>Total score</b></th>" \
-        "<th width=\"130\" align=\"left\">3BV score (min clicks)</th><th width=\"100\" align=\"left\">Clicks</th>" \
-        "<th width=\"100\" align=\"left\">Time</th><th width=\"100\" align=\"left\">Difficulty</th></tr>%1</table>")
-        .arg(tableRows);
+    auto html = QString("<h3><u>%2</u></h3><table>" \
+        "<tr><th width=\"100\" align=\"left\">%3</th><th width=\"100\" align=\"left\"><b>%4</b></th>" \
+        "<th width=\"130\" align=\"left\">%5</th><th width=\"100\" align=\"left\">%6</th>" \
+        "<th width=\"100\" align=\"left\">%7</th><th width=\"100\" align=\"left\">%8</th></tr>%1</table>")
+        .arg(tableRows)
+        .arg(tr("Highscore"))
+        .arg(tr("Name"))
+        .arg(tr("Total score"))
+        .arg(tr("3BV score (min clicks)"))
+        .arg(tr("Clicks"))
+        .arg(tr("Time"))
+        .arg(tr("Difficulty"));
 
-    QMessageBox::information(parent, QString("Highscore TOP %1").arg(m_topList.size()), html);
+    QMessageBox box(QMessageBox::NoIcon, tr("Highscore TOP %1").arg(m_topList.size()), html,
+        QMessageBox::Ok, parent);
+
+    box.exec();
+}
+
+QString HighScore::getStringFromDifficultyMode(const DifficultyMode& mode)
+{
+    switch (mode)
+    {
+    case HighScore::DifficultyMode::Beginner:
+        return tr("Beginner");
+    case HighScore::DifficultyMode::Intermediate:
+        return tr("Intermediate");
+    case HighScore::DifficultyMode::Expert:
+        return tr("Expert");
+    case HighScore::DifficultyMode::CustomGame:
+        return tr("Custom game");
+    default:
+        break;
+    };
+
+    return QString();
 }
