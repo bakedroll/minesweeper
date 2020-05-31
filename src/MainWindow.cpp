@@ -94,6 +94,8 @@ MainWindow::MainWindow(QWidget* parent)
 {
     m_ui->setupUi(this);
 
+    setWindowFlags(windowFlags() &(~Qt::WindowMaximizeButtonHint));
+
     m_timer.setInterval(1000);
     m_timer.setSingleShot(false);
 
@@ -551,7 +553,7 @@ void MainWindow::checkHighScore()
     auto score3bv = count3BV();
     auto score3bvPerTime = static_cast<float>(score3bv) / time;
     auto score3bvPerClicks = static_cast<float>(score3bv) / m_numClicks;
-    auto totalScore = score3bvPerTime + score3bvPerClicks;
+    auto totalScore = static_cast<int>(score3bvPerTime + score3bvPerClicks) * 100;
 
     if (m_highScore.hasReachedTopThree(totalScore))
     {
@@ -577,7 +579,7 @@ void MainWindow::checkHighScore()
         m_highScore.saveScore();
     }
 
-    m_highScore.displayScore(this);
+    m_highScore.displayScore(this, HighScore::HighscoreDisplayMode::HighlightLastAdded);
 }
 
 // see https://gamedev.stackexchange.com/questions/63046/how-should-i-calculate-the-score-in-minesweeper-3bv-or-3bv-s

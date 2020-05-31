@@ -20,6 +20,11 @@ int getMaxHighscoreEntries()
     return 10;
 }
 
+QString formatHtmlColor(const QString& text, const QColor& color)
+{
+    return QString("<span style=\"color:%1;\">%2</span>").arg(color.name()).arg(text);
+}
+
 QString getStringFromDifficultyMode(const HighScore::DifficultyMode& mode)
 {
     switch (mode)
@@ -40,6 +45,7 @@ QString getStringFromDifficultyMode(const HighScore::DifficultyMode& mode)
 }
 
 HighScore::HighScore()
+    : m_lastAddedId(0)
 {
     loadScore();
 }
@@ -66,11 +72,12 @@ void HighScore::loadScore()
         }
 
         ScoreData data;
+        data.id = static_cast<int>(m_topList.size());
         data.name = elements[0];
         data.score3bv = elements[1].toInt();
         data.score3bvPerTime = elements[2].toFloat();
         data.score3bvPerClicks = elements[3].toFloat();
-        data.totalScore = elements[4].toFloat();
+        data.totalScore = elements[4].toInt();
         data.clicks = elements[5].toInt();
         data.time = elements[6].toInt();
         data.mode = static_cast<DifficultyMode>(elements[7].toInt());
@@ -118,9 +125,13 @@ bool HighScore::hasReachedTopThree(int totalScore)
     return (m_topList.rbegin()->totalScore < totalScore);
 }
 
-void HighScore::addScoreData(const ScoreData& data)
+void HighScore::addScoreData(ScoreData& data)
 {
+    data.id = static_cast<int>(m_topList.size());
     m_topList.push_back(data);
+
+    m_lastAddedId = data.id;
+
     std::sort(m_topList.begin(), m_topList.end(), [](const ScoreData& lhs, const ScoreData& rhs)
     {
         return lhs.totalScore > rhs.totalScore;       
@@ -133,18 +144,25 @@ void HighScore::addScoreData(const ScoreData& data)
     }
 }
 
-void HighScore::displayScore(QWidget* parent)
+void HighScore::displayScore(QWidget* parent, HighscoreDisplayMode mode)
 {
+    QPalette palette;
+    auto defaultColor = palette.color(QPalette::Text);
+
     QString tableRows;
     for (const auto& data : m_topList)
     {
-        tableRows.append(QString("<tr><td>%1</td><td><b>%2</b></td><td>%3</td><td>%4</td><td>%5 s</td><td>%6</td></tr>")
-            .arg(data.name)
-            .arg(data.totalScore)
-            .arg(data.score3bv)
-            .arg(data.clicks)
-            .arg(data.time)
-            .arg(getStringFromDifficultyMode(data.mode)));
+        QColor color(((mode == HighscoreDisplayMode::HighlightLastAdded) && (data.id == m_lastAddedId))
+            ? Qt::darkGreen : defaultColor);
+
+        tableRows.append(QString("<tr><td>%1</td><td><b>%2</b></td><td>%3</td>" \
+            "<td>%4</td><td>%5</td><td>%6</td></tr>")
+            .arg(formatHtmlColor(data.name, color))
+            .arg(formatHtmlColor(QString::number(data.totalScore), color))
+            .arg(formatHtmlColor(QString::number(data.score3bv), color))
+            .arg(formatHtmlColor(QString::number(data.clicks), color))
+            .arg(formatHtmlColor(QString::number(data.time) + " s", color))
+            .arg(formatHtmlColor(getStringFromDifficultyMode(data.mode), color)));
     }
 
     auto html = QString("<h3><u>Highscore</u></h3><table>" \
