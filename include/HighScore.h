@@ -24,6 +24,7 @@ public:
         float score3bvPerClicks;
         float totalScore;
         int time;
+        int clicks;
         DifficultyMode mode;
     };
 

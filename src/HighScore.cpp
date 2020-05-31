@@ -60,7 +60,7 @@ void HighScore::loadScore()
         auto line = stream.readLine();
         auto elements = line.split(';');
 
-        if (elements.length() < 7)
+        if (elements.length() < 8)
         {
             continue;
         }
@@ -71,8 +71,9 @@ void HighScore::loadScore()
         data.score3bvPerTime = elements[2].toFloat();
         data.score3bvPerClicks = elements[3].toFloat();
         data.totalScore = elements[4].toFloat();
-        data.time = elements[5].toInt();
-        data.mode = static_cast<DifficultyMode>(elements[6].toInt());
+        data.clicks = elements[5].toInt();
+        data.time = elements[6].toInt();
+        data.mode = static_cast<DifficultyMode>(elements[7].toInt());
 
         m_topList.push_back(data);
     }
@@ -91,12 +92,13 @@ void HighScore::saveScore()
     QTextStream stream(&file);
     for (const auto& data : m_topList)
     {
-        auto line = QString("%1;%2;%3;%4;%5;%6;%7\n")
+        auto line = QString("%1;%2;%3;%4;%5;%6;%7;%8\n")
             .arg(data.name)
             .arg(data.score3bv)
             .arg(data.score3bvPerTime)
             .arg(data.score3bvPerClicks)
             .arg(data.totalScore)
+            .arg(data.clicks)
             .arg(data.time)
             .arg(underlying(data.mode));
 
@@ -136,21 +138,19 @@ void HighScore::displayScore(QWidget* parent)
     QString tableRows;
     for (const auto& data : m_topList)
     {
-        tableRows.append(QString("<tr><td>%1</td><td><b>%2</b></td><td>%3</td><td>%4</td><td>%5</td><td>%6 s</td><td>%7</td></tr>")
+        tableRows.append(QString("<tr><td>%1</td><td><b>%2</b></td><td>%3</td><td>%4</td><td>%5 s</td><td>%6</td></tr>")
             .arg(data.name)
             .arg(data.totalScore)
             .arg(data.score3bv)
-            .arg(data.score3bvPerClicks)
-            .arg(data.score3bvPerTime)
+            .arg(data.clicks)
             .arg(data.time)
             .arg(getStringFromDifficultyMode(data.mode)));
     }
 
     auto html = QString("<h3><u>Highscore</u></h3><table>" \
         "<tr><th width=\"100\" align=\"left\">Name</th><th width=\"100\" align=\"left\"><b>Total score</b></th>" \
-        "<th width=\"100\" align=\"left\">3BV score</th><th width=\"130\" align=\"left\">3BV score / clicks</th>" \
-        "<th width=\"130\" align=\"left\">3BV score / seconds</th><th width=\"100\" align=\"left\">Time</th>" \
-        "<th width=\"100\" align=\"left\">Difficulty</th></tr>%1</table>")
+        "<th width=\"130\" align=\"left\">3BV score (min clicks)</th><th width=\"100\" align=\"left\">Clicks</th>" \
+        "<th width=\"100\" align=\"left\">Time</th><th width=\"100\" align=\"left\">Difficulty</th></tr>%1</table>")
         .arg(tableRows);
 
     QMessageBox::information(parent, QString("Highscore TOP %1").arg(m_topList.size()), html);

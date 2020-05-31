@@ -487,7 +487,7 @@ void MainWindow::checkWinningCondition()
             conditionAllUncoveredMet = false;
         }
 
-        if (hasMine && !isFlagged)
+        if (hasMine != isFlagged)
         {
             conditionAllMinesFlaggedMet = false;
         }
@@ -569,6 +569,7 @@ void MainWindow::checkHighScore()
         data.score3bv = score3bv;
         data.score3bvPerTime = score3bvPerTime;
         data.score3bvPerClicks = score3bvPerClicks;
+        data.clicks = m_numClicks;
         data.time = time;
         data.mode = static_cast<HighScore::DifficultyMode>(m_ui->comboBoxDifficultyMode->currentIndex());
 
