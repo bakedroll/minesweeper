@@ -69,7 +69,11 @@ endforeach()
 
 add_custom_target(
   lupdate
-  COMMAND lupdate -silent -I ${CMAKE_CURRENT_SOURCE_DIR}/include ${CMAKE_CURRENT_SOURCE_DIR}/src -ts ${TS_FILES})
+  COMMAND lupdate -I ${CMAKE_CURRENT_SOURCE_DIR}/include ${CMAKE_CURRENT_SOURCE_DIR}/src -ts ${TS_FILES})
+
+add_custom_target(
+  lrelease
+  COMMAND lrelease ${TS_FILES} -qm ${QM_FILES})
 
 set(CMAKE_INCLUDE_CURRENT_DIR OFF)
 set(CMAKE_AUTOMOC OFF)
