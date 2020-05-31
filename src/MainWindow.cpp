@@ -119,6 +119,9 @@ MainWindow::MainWindow(QWidget* parent)
     connect(&m_timer, &QTimer::timeout, this, &MainWindow::incrementClock);
     connect(m_ui->comboBoxDifficultyMode, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &MainWindow::loadDifficultyMode);
 
+    connect(m_ui->actionHighscore, &QAction::triggered, [this]() { m_highScore.displayScore(); });
+    connect(m_ui->actionExit, &QAction::triggered, [this]() { close(); });
+
     resetMineField();
 }
 
