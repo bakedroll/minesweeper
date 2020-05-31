@@ -1,0 +1,11 @@
+<RCC>
+    <qresource>
+        <file>Resources/flag_small.png</file>
+        <file>Resources/mine_small.png</file>
+        <file>Resources/mine_missed_small.png</file>
+        <file>Resources/smiley_happy_small.png</file>
+        <file>Resources/smiley_excited_small.png</file>
+        <file>Resources/smiley_glasses_small.png</file>
+        <file>Resources/smiley_angry_small.png</file>
+    </qresource>
+</RCC>
