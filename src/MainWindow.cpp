@@ -119,7 +119,7 @@ MainWindow::MainWindow(QWidget* parent)
     connect(&m_timer, &QTimer::timeout, this, &MainWindow::incrementClock);
     connect(m_ui->comboBoxDifficultyMode, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &MainWindow::loadDifficultyMode);
 
-    connect(m_ui->actionHighscore, &QAction::triggered, [this]() { m_highScore.displayScore(); });
+    connect(m_ui->actionHighscore, &QAction::triggered, [this]() { m_highScore.displayScore(this); });
     connect(m_ui->actionExit, &QAction::triggered, [this]() { close(); });
 
     resetMineField();
@@ -343,7 +343,7 @@ void MainWindow::checkMineField(const Coordinate& coord)
     m_numClicks++;
 
     CoordinateSet visited;
-    uncoverFieldHint(coord, visited);
+    uncoverField(coord, visited);
 
     checkWinningCondition();
 }
@@ -389,7 +389,7 @@ void MainWindow::toggleMineFieldFlag(const Coordinate& coord)
     }
 }
 
-void MainWindow::uncoverFieldHint(const Coordinate& coord, CoordinateSet& visited)
+void MainWindow::uncoverField(const Coordinate& coord, CoordinateSet& visited)
 {
     if (visited.count(coord) > 0)
     {
@@ -423,7 +423,7 @@ void MainWindow::uncoverFieldHint(const Coordinate& coord, CoordinateSet& visite
         {
             forEachAdjacentField(coord, [this, &visited](const Coordinate& adjCoord)
             {
-                uncoverFieldHint(adjCoord, visited);
+                uncoverField(adjCoord, visited);
             });
         }
     }

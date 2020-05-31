@@ -78,7 +78,7 @@ private:
 
     void checkMineField(const Coordinate& coord);
     void toggleMineFieldFlag(const Coordinate& coord);
-    void uncoverFieldHint(const Coordinate& coord, CoordinateSet& visited);
+    void uncoverField(const Coordinate& coord, CoordinateSet& visited);
     void uncoverAll();
     void checkWinningCondition();
 
