@@ -553,7 +553,7 @@ void MainWindow::checkHighScore()
     auto score3bv = count3BV();
     auto score3bvPerTime = static_cast<float>(score3bv) / time;
     auto score3bvPerClicks = static_cast<float>(score3bv) / m_numClicks;
-    auto totalScore = static_cast<int>(score3bvPerTime + score3bvPerClicks) * 100;
+    auto totalScore = static_cast<int>((score3bvPerTime + score3bvPerClicks) * 100.0f);
 
     if (m_highScore.hasReachedTopThree(totalScore))
     {
