@@ -7,5 +7,7 @@
         <file>Resources/smiley_excited_small.png</file>
         <file>Resources/smiley_glasses_small.png</file>
         <file>Resources/smiley_angry_small.png</file>
+        <file>Resources/randomize_small.png</file>
+        <file>Resources/seed_small.png</file>
     </qresource>
 </RCC>

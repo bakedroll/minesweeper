@@ -3,21 +3,15 @@
 
 #include "ui_MainWindow.h"
 
-#include <QMessageBox>
 #include <QDesktopWidget>
 #include <QInputDialog>
+#include <QTime>
 
 enum class FontWeight
 {
     Normal,
     Bold
 };
-
-void setSpinBoxValueBlockingSignals(QSpinBox* box, int value)
-{
-    QSignalBlocker blocker(box);
-    box->setValue(value);
-}
 
 void setWidgetStyle(QWidget* widget, const QColor& color, FontWeight weight = FontWeight::Normal)
 {
@@ -68,15 +62,6 @@ void deleteLayout(QLayout* layout)
     delete layout;
 }
 
-MainWindow::DifficultyParams::DifficultyParams() = default;
-
-MainWindow::DifficultyParams::DifficultyParams(int w, int h, int q)
-    : width(w)
-    , height(h)
-    , minesQuantity(q)
-{
-}
-
 MainWindow::MainWindow(QWidget* parent)
     : QMainWindow(parent)
     , m_ui(new Ui::MainWindow())
@@ -88,13 +73,16 @@ MainWindow::MainWindow(QWidget* parent)
     , m_iconSmileyExcited(":/Resources/smiley_excited_small.png")
     , m_iconSmileyGlasses(":/Resources/smiley_glasses_small.png")
     , m_iconSmileyAngry(":/Resources/smiley_angry_small.png")
+    , m_difficultyIndex(0)
     , m_minesPlaced(false)
-    , m_minesQuantity(0)
     , m_numClicks(0)
 {
     m_ui->setupUi(this);
 
     setWindowFlags(windowFlags() &(~Qt::WindowMaximizeButtonHint));
+
+    setButtonIcon(m_ui->buttonRandomize, QIcon(":/Resources/randomize_small.png"), QSize(24, 24));
+    setButtonIcon(m_ui->buttonSeed, QIcon(":/Resources/seed_small.png"), QSize(24, 24));
 
     for (auto i=0; i<underlying(HighScore::DifficultyMode::DifficultyModeCount); i++)
     {
@@ -102,7 +90,8 @@ MainWindow::MainWindow(QWidget* parent)
             HighScore::getStringFromDifficultyMode(static_cast<HighScore::DifficultyMode>(i)));
     }
 
-    m_ui->comboBoxDifficultyMode->setCurrentIndex(underlying(HighScore::DifficultyMode::Beginner));
+    m_difficultyIndex = underlying(HighScore::DifficultyMode::Beginner);
+    m_ui->comboBoxDifficultyMode->setCurrentIndex(m_difficultyIndex);
 
     m_timer.setInterval(1000);
     m_timer.setSingleShot(false);
@@ -116,79 +105,24 @@ MainWindow::MainWindow(QWidget* parent)
     m_digitColors[7] = QColor(Qt::darkYellow);
     m_digitColors[8] = QColor(Qt::darkCyan);
 
-    m_difficultyModes[HighScore::DifficultyMode::Beginner] = DifficultyParams(8, 8, 10);
-    m_difficultyModes[HighScore::DifficultyMode::Intermediate] = DifficultyParams(16, 16, 40);
-    m_difficultyModes[HighScore::DifficultyMode::Expert] = DifficultyParams(31, 16, 99);
+    m_difficultyModes[HighScore::DifficultyMode::Beginner] = DifficultyParams(QSize(8, 8), 10);
+    m_difficultyModes[HighScore::DifficultyMode::Intermediate] = DifficultyParams(QSize(16, 16), 40);
+    m_difficultyModes[HighScore::DifficultyMode::Expert] = DifficultyParams(QSize(16, 31), 99);
 
-    connect(m_ui->buttonReset, &QPushButton::clicked, [this](){ resetMineField(false); });
-
-    connect(m_ui->spinBoxMines, QOverload<int>::of(&QSpinBox::valueChanged), this, &MainWindow::balanceMinesQuantity);
-    connect(m_ui->spinBoxWidth, QOverload<int>::of(&QSpinBox::valueChanged), this, QOverload<>::of(&MainWindow::resetMineField));
-    connect(m_ui->spinBoxHeight, QOverload<int>::of(&QSpinBox::valueChanged), this, QOverload<>::of(&MainWindow::resetMineField));
+    connect(m_ui->buttonReset, &QPushButton::clicked, this, &MainWindow::resetMineFieldRandomized);
+    connect(m_ui->buttonRandomize, &QPushButton::clicked, this, &MainWindow::randomizeSeed);
+    connect(m_ui->buttonSeed, &QPushButton::clicked, this, &MainWindow::resetMineField);
 
     connect(&m_timer, &QTimer::timeout, this, &MainWindow::incrementClock);
     connect(m_ui->comboBoxDifficultyMode, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &MainWindow::loadDifficultyMode);
 
     connect(m_ui->actionHighscore, &QAction::triggered, [this]() { m_highScore.displayScore(this); });
-    connect(m_ui->actionExit, &QAction::triggered, [this]() { close(); });
+    connect(m_ui->actionExit, &QAction::triggered, this, &QMainWindow::close);
 
-    resetMineField();
+    loadDifficultyMode(m_difficultyIndex);
 }
 
 MainWindow::~MainWindow() = default;
-
-void MainWindow::resetMineField(bool centerWindow)
-{
-    setGameState(GameState::Running);
-
-    m_numClicks = 0;
-    m_minesPlaced = false;
-    m_minesQuantity = m_ui->spinBoxMines->value();
-
-    m_ui->displayMinesLeft->display(m_minesQuantity);
-    m_ui->displayTime->display(0);
-
-    const auto width = m_ui->spinBoxWidth->value();
-    const auto height = m_ui->spinBoxHeight->value();
-
-    makeMinefield(QSize(height, width));
-
-    QTimer::singleShot(0, [this, centerWindow]()
-    {
-        adjustSize();
-
-        if (centerWindow)
-        {
-            auto screenGeo = QApplication::desktop()->availableGeometry();
-
-            auto geo = geometry();
-            geo.moveCenter(screenGeo.center());
-
-            setGeometry(geo);
-        }
-
-        setFixedSize(sizeHint());
-    });
-}
-
-void MainWindow::resetMineField()
-{
-    resetMineField(true);
-}
-
-void MainWindow::balanceMinesQuantity(int quantity)
-{
-    const auto width = m_ui->spinBoxWidth->value();
-    const auto height = m_ui->spinBoxHeight->value();
-
-    const auto maxMines = (width * height) / 2;
-    const auto mines = std::min<int>(quantity, maxMines);
-
-    QSignalBlocker blocker(m_ui->spinBoxMines);
-    m_ui->spinBoxMines->setValue(mines);
-
-    resetMineField(false);
-}
 
 void MainWindow::incrementClock()
 {
@@ -200,34 +134,69 @@ void MainWindow::loadDifficultyMode(int index)
     auto mode = static_cast<HighScore::DifficultyMode>(index);
     if (mode == HighScore::DifficultyMode::CustomGame)
     {
-        setDifficultyParamFieldsEnabled(true);
+        CustomGameDialog dialog(this);
+        if (!dialog.exec())
+        {
+            QSignalBlocker blocker(m_ui->comboBoxDifficultyMode);
+            m_ui->comboBoxDifficultyMode->setCurrentIndex(m_difficultyIndex);
+            return;
+        }
+
+        m_params = dialog.getParams();
     }
     else
     {
-        setDifficultyParamFieldsEnabled(false);
-
-        auto& params = m_difficultyModes[mode];
-
-        setSpinBoxValueBlockingSignals(m_ui->spinBoxWidth, params.width);
-        setSpinBoxValueBlockingSignals(m_ui->spinBoxHeight, params.height);
-        setSpinBoxValueBlockingSignals(m_ui->spinBoxMines, params.minesQuantity);
-
-        resetMineField(false);
+        m_params = m_difficultyModes[mode];
     }
+
+    m_difficultyIndex = index;
+    resetMineFieldRandomized();
+
+    QTimer::singleShot(0, [this]()
+    {
+        adjustSize();
+
+        auto screenGeo = QApplication::desktop()->availableGeometry();
+
+        auto geo = geometry();
+        geo.moveCenter(screenGeo.center());
+
+        setGeometry(geo);
+
+        setFixedSize(sizeHint());
+    });
 }
 
-void MainWindow::setDifficultyParamFieldsEnabled(bool enabled)
+void MainWindow::resetMineFieldRandomized()
 {
-    m_ui->spinBoxMines->setEnabled(enabled);
-    m_ui->spinBoxWidth->setEnabled(enabled);
-    m_ui->spinBoxHeight->setEnabled(enabled);
+    randomizeSeed();
+    resetMineField();
 }
 
-void MainWindow::makeMinefield(const QSize& size)
+void MainWindow::resetMineField()
+{
+    setGameState(GameState::Running);
+
+    m_numClicks = 0;
+    m_minesPlaced = false;
+
+    m_ui->displayMinesLeft->display(m_params.minesQuantity);
+    m_ui->displayTime->display(0);
+
+    makeMinefield();
+}
+
+void MainWindow::randomizeSeed()
+{
+    auto time = QTime ::currentTime();
+    srand(time.msecsSinceStartOfDay());
+
+    m_ui->spinBoxSeed->setValue(rand() % m_ui->spinBoxSeed->maximum());
+}
+
+void MainWindow::makeMinefield()
 {
     m_mineFields.clear();
-
-    m_size = size;
 
     deleteLayout(m_ui->widgetContent->layout());
 
@@ -278,7 +247,7 @@ void MainWindow::makeMinefield(const QSize& size)
 
 void MainWindow::placeMines(int quantity, const Coordinate& excludedCoord)
 {
-    srand(time(0));
+    srand(m_ui->spinBoxSeed->value());
 
     m_mines.clear();
 
@@ -287,7 +256,7 @@ void MainWindow::placeMines(int quantity, const Coordinate& excludedCoord)
         auto isExistingOrExcluded = false;
         do
         {
-            Coordinate coord(rand() % m_size.width(), rand() % m_size.height());
+            Coordinate coord(rand() % m_params.size.width(), rand() % m_params.size.height());
             isExistingOrExcluded = ((m_mines.count(coord) > 0) || (coord == excludedCoord));
 
             if (!isExistingOrExcluded)
@@ -302,6 +271,8 @@ void MainWindow::placeMines(int quantity, const Coordinate& excludedCoord)
 
 void MainWindow::setGameState(GameState state)
 {
+    m_timer.stop();
+
     m_state = state;
     switch (m_state)
     {
@@ -309,15 +280,12 @@ void MainWindow::setGameState(GameState state)
         setButtonIcon(m_ui->buttonReset, m_iconSmileyHappy, QSize(64, 64));
         return;
     case GameState::Succeeded:
-        setButtonIcon(m_ui->buttonReset, m_iconSmileyGlasses, QSize(64, 64));
-        m_timer.stop();
-        
+        setButtonIcon(m_ui->buttonReset, m_iconSmileyGlasses, QSize(64, 64));        
         checkHighScore();
 
         break;
     case GameState::Failed:
         setButtonIcon(m_ui->buttonReset, m_iconSmileyAngry, QSize(64, 64));
-        m_timer.stop();
         break;
     default:
         break;
@@ -328,7 +296,7 @@ void MainWindow::checkMineField(const Coordinate& coord)
 {
     if (!m_minesPlaced)
     {
-        placeMines(m_minesQuantity, coord);
+        placeMines(m_params.minesQuantity, coord);
         m_timer.start();
     }
 
@@ -488,11 +456,11 @@ void MainWindow::checkWinningCondition()
     forEachField([this, &conditionAllUncoveredMet, &conditionAllMinesFlaggedMet](const Coordinate& coord)
     {
         auto& field = m_mineFields[coord];
-        auto isCovered = ((field.state == ButtonState::Hidden) || (field.state == ButtonState::Unclear));
+        auto isUncovered = (field.state == ButtonState::Uncovered);
         auto isFlagged = (field.state == ButtonState::Flagged);
         auto hasMine = (m_mines.count(coord) > 0);
 
-        if (!hasMine && isCovered)
+        if (!hasMine && !isUncovered)
         {
             conditionAllUncoveredMet = false;
         }
@@ -503,7 +471,7 @@ void MainWindow::checkWinningCondition()
         }
     });
 
-    if (!conditionAllUncoveredMet && !conditionAllMinesFlaggedMet)
+    if ((!conditionAllUncoveredMet && !conditionAllMinesFlaggedMet))
     {
         return;
     }
@@ -513,9 +481,9 @@ void MainWindow::checkWinningCondition()
 
 void MainWindow::forEachField(FieldFunction func)
 {
-    for (auto y = 0; y < m_size.height(); y++)
+    for (auto y = 0; y < m_params.size.height(); y++)
     {
-        for (auto x = 0; x < m_size.width(); x++)
+        for (auto x = 0; x < m_params.size.width(); x++)
         {
             func(Coordinate(x, y));
         }
@@ -530,7 +498,8 @@ void MainWindow::forEachAdjacentField(const Coordinate& coord, FieldFunction fun
         {
             Coordinate adjCoord(x, y);
 
-            if ((x < 0) || (y < 0) || (x >= m_size.width()) || (y >= m_size.height()) || (coord == adjCoord))
+            if ((x < 0) || (y < 0) || (x >= m_params.size.width()) ||
+                (y >= m_params.size.height()) || (coord == adjCoord))
             {
                 continue;
             }

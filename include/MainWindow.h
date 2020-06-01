@@ -1,6 +1,7 @@
 #pragma once
 
 #include "HighScore.h"
+#include "CustomGameDialog.h"
 
 #include <QMainWindow>
 #include <QPushButton>
@@ -33,11 +34,11 @@ public:
     virtual ~MainWindow();
 
 private Q_SLOTS:
-    void resetMineField(bool centerWindow);
-    void resetMineField();
-    void balanceMinesQuantity(int quantity);
     void incrementClock();
     void loadDifficultyMode(int index);
+    void resetMineFieldRandomized();
+    void resetMineField();
+    void randomizeSeed();
 
 private:
     enum class GameState
@@ -53,25 +54,13 @@ private:
         ButtonState state = ButtonState::Hidden;
     };
 
-    struct DifficultyParams
-    {
-        DifficultyParams();
-        DifficultyParams(int w, int h, int q);
-
-        int width = 8;
-        int height = 8;
-        int minesQuantity = 10;
-    };
-
     using Coordinate = std::pair<int, int>;
     using FieldFunction = std::function<void(const Coordinate&)>;
     using CoordinateSet = std::set<Coordinate>;
 
     std::unique_ptr<Ui::MainWindow> m_ui;
 
-    void setDifficultyParamFieldsEnabled(bool enabled);
-
-    void makeMinefield(const QSize& size);
+    void makeMinefield();
     void placeMines(int quantity, const Coordinate& excludedCoord);
 
     void setGameState(GameState state);
@@ -92,7 +81,9 @@ private:
     int count3BV();
     void floodFillMark(const Coordinate& coord, CoordinateSet& marked);
 
-    QSize m_size;
+    int m_difficultyIndex;
+    DifficultyParams m_params;
+
     CoordinateSet m_mines;
     std::map<Coordinate, MineField> m_mineFields;
     std::map<HighScore::DifficultyMode, DifficultyParams> m_difficultyModes;
@@ -111,7 +102,6 @@ private:
     QIcon m_iconSmileyAngry;
 
     bool m_minesPlaced;
-    int m_minesQuantity;
     int m_numClicks;
 
     QTimer m_timer;

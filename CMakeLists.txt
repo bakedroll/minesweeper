@@ -23,11 +23,13 @@ set(PROJECT_NAME QtMinesweeper)
 set(SOURCE_FILES
 	src/main.cpp
 	src/MainWindow.cpp
+  src/CustomGameDialog.cpp
   src/RightClickableButton.cpp
   src/HighScore.cpp)
 
 set(HEADER_FILES
 	include/MainWindow.h
+  include/CustomGameDialog.h
   include/RightClickableButton.h
   include/HighScore.h)
 
