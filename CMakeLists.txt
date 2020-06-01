@@ -7,6 +7,11 @@ set(QT5_MODULES
   Gui
   Widgets)
 
+set(QT5_ROOT_DIRECTORY "NOTFOUND" CACHE STRING "Qt5 root directory")
+if (EXISTS ${QT5_ROOT_DIRECTORY})
+  set(CMAKE_PREFIX_PATH ${QT5_ROOT_DIRECTORY})
+endif()
+
 foreach(module ${QT5_MODULES})
   find_package(Qt5${module} REQUIRED)
 endforeach()
