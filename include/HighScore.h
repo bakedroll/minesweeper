@@ -1,30 +1,17 @@
 #pragma once
 
+#include "HighScoreDialog.h"
+
 #include <QString>
 #include <QWidget>
 
 #include <vector>
-
-template <typename T>
-typename std::underlying_type<T>::type underlying(T t)
-{
-    return static_cast<typename std::underlying_type<T>::type>(t);
-}
 
 class HighScore : QObject
 {
     Q_OBJECT
 
 public:
-    enum class DifficultyMode : int
-    {
-        Beginner,
-        Intermediate,
-        Expert,
-        CustomGame,
-        DifficultyModeCount
-    };
-
     struct ScoreData
     {
         int id = -1;
@@ -50,17 +37,24 @@ public:
     void loadScore();
     void saveScore();
 
-    bool hasReachedTopThree(int totalScore);
-    void addScoreData(ScoreData& data);
+    bool hasReachedTopThree(DifficultyMode mode, int totalScore);
+    void addScoreData(DifficultyMode mode, ScoreData& data);
 
-    void displayScore(QWidget* parent = nullptr, HighscoreDisplayMode mode = HighscoreDisplayMode::NoHighlighting);
-
-    static QString getStringFromDifficultyMode(const DifficultyMode& mode);
+    void displayScore(DifficultyMode difficultyMode, QWidget* parent = nullptr,
+        HighscoreDisplayMode mode = HighscoreDisplayMode::NoHighlighting);
 
 private:
     using TopList = std::vector<ScoreData>;
+    using HighScoresMap = std::map<DifficultyMode, TopList>;
 
-    TopList m_topList;
-    int m_lastAddedId;
+    HighScoresMap m_highScores;
+
+    struct LastAddedEntry
+    {
+        DifficultyMode mode = DifficultyMode::Beginner;
+        int id = -1;
+    };
+
+    LastAddedEntry m_lastAddedEntry;
 
 };

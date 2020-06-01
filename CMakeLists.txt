@@ -24,17 +24,21 @@ set(SOURCE_FILES
 	src/main.cpp
 	src/MainWindow.cpp
   src/CustomGameDialog.cpp
+  src/HighScoreDialog.cpp
   src/RightClickableButton.cpp
   src/HighScore.cpp)
 
 set(HEADER_FILES
 	include/MainWindow.h
   include/CustomGameDialog.h
+  include/HighScoreDialog.h
   include/RightClickableButton.h
   include/HighScore.h)
 
 set(UI_FILES
-	src/MainWindow.ui)
+	src/MainWindow.ui
+  src/CustomGameDialog.ui
+  src/HighScoreDialog.ui)
 
 set(TS_FILES
   ${CMAKE_CURRENT_SOURCE_DIR}/translations/${PROJECT_NAME}_en.ts

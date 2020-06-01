@@ -84,13 +84,13 @@ MainWindow::MainWindow(QWidget* parent)
     setButtonIcon(m_ui->buttonRandomize, QIcon(":/Resources/randomize_small.png"), QSize(24, 24));
     setButtonIcon(m_ui->buttonSeed, QIcon(":/Resources/seed_small.png"), QSize(24, 24));
 
-    for (auto i=0; i<underlying(HighScore::DifficultyMode::DifficultyModeCount); i++)
+    for (auto i=0; i<underlying(DifficultyMode::DifficultyModeCount); i++)
     {
         m_ui->comboBoxDifficultyMode->addItem(
-            HighScore::getStringFromDifficultyMode(static_cast<HighScore::DifficultyMode>(i)));
+            getStringFromDifficultyMode(static_cast<DifficultyMode>(i)));
     }
 
-    m_difficultyIndex = underlying(HighScore::DifficultyMode::Beginner);
+    m_difficultyIndex = underlying(DifficultyMode::Beginner);
     m_ui->comboBoxDifficultyMode->setCurrentIndex(m_difficultyIndex);
 
     m_timer.setInterval(1000);
@@ -105,9 +105,9 @@ MainWindow::MainWindow(QWidget* parent)
     m_digitColors[7] = QColor(Qt::darkYellow);
     m_digitColors[8] = QColor(Qt::darkCyan);
 
-    m_difficultyModes[HighScore::DifficultyMode::Beginner] = DifficultyParams(QSize(8, 8), 10);
-    m_difficultyModes[HighScore::DifficultyMode::Intermediate] = DifficultyParams(QSize(16, 16), 40);
-    m_difficultyModes[HighScore::DifficultyMode::Expert] = DifficultyParams(QSize(16, 31), 99);
+    m_difficultyModes[DifficultyMode::Beginner] = DifficultyParams(QSize(8, 8), 10);
+    m_difficultyModes[DifficultyMode::Intermediate] = DifficultyParams(QSize(16, 16), 40);
+    m_difficultyModes[DifficultyMode::Expert] = DifficultyParams(QSize(16, 31), 99);
 
     connect(m_ui->buttonReset, &QPushButton::clicked, this, &MainWindow::resetMineFieldRandomized);
     connect(m_ui->buttonRandomize, &QPushButton::clicked, this, &MainWindow::randomizeSeed);
@@ -116,7 +116,11 @@ MainWindow::MainWindow(QWidget* parent)
     connect(&m_timer, &QTimer::timeout, this, &MainWindow::incrementClock);
     connect(m_ui->comboBoxDifficultyMode, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &MainWindow::loadDifficultyMode);
 
-    connect(m_ui->actionHighscore, &QAction::triggered, [this]() { m_highScore.displayScore(this); });
+    connect(m_ui->actionHighscore, &QAction::triggered, [this]()
+    {
+        m_highScore.displayScore(static_cast<DifficultyMode>(m_difficultyIndex), this);
+    });
+
     connect(m_ui->actionExit, &QAction::triggered, this, &QMainWindow::close);
 
     loadDifficultyMode(m_difficultyIndex);
@@ -131,8 +135,8 @@ void MainWindow::incrementClock()
 
 void MainWindow::loadDifficultyMode(int index)
 {
-    auto mode = static_cast<HighScore::DifficultyMode>(index);
-    if (mode == HighScore::DifficultyMode::CustomGame)
+    auto mode = static_cast<DifficultyMode>(index);
+    if (mode == DifficultyMode::CustomGame)
     {
         CustomGameDialog dialog(this);
         if (!dialog.exec())
@@ -532,7 +536,9 @@ void MainWindow::checkHighScore()
     auto score3bvPerClicks = static_cast<float>(score3bv) / m_numClicks;
     auto totalScore = static_cast<int>((score3bvPerTime + score3bvPerClicks) * 100.0f);
 
-    if (m_highScore.hasReachedTopThree(totalScore))
+    auto mode = static_cast<DifficultyMode>(m_difficultyIndex);
+
+    if (m_highScore.hasReachedTopThree(mode, totalScore))
     {
         QString name;
 
@@ -550,13 +556,13 @@ void MainWindow::checkHighScore()
         data.score3bvPerClicks = score3bvPerClicks;
         data.clicks = m_numClicks;
         data.time = time;
-        data.mode = static_cast<HighScore::DifficultyMode>(m_ui->comboBoxDifficultyMode->currentIndex());
+        data.mode = mode;
 
-        m_highScore.addScoreData(data);
+        m_highScore.addScoreData(mode, data);
         m_highScore.saveScore();
     }
 
-    m_highScore.displayScore(this, HighScore::HighscoreDisplayMode::HighlightLastAdded);
+    m_highScore.displayScore(mode, this, HighScore::HighscoreDisplayMode::HighlightLastAdded);
 }
 
 // see https://gamedev.stackexchange.com/questions/63046/how-should-i-calculate-the-score-in-minesweeper-3bv-or-3bv-s

@@ -86,7 +86,7 @@ private:
 
     CoordinateSet m_mines;
     std::map<Coordinate, MineField> m_mineFields;
-    std::map<HighScore::DifficultyMode, DifficultyParams> m_difficultyModes;
+    std::map<DifficultyMode, DifficultyParams> m_difficultyModes;
 
     GameState m_state;
 

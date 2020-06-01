@@ -18,9 +18,6 @@ CustomGameDialog::CustomGameDialog(QWidget* parent)
 
 	connect(m_ui->spinBoxMines, QOverload<int>::of(&QSpinBox::valueChanged),
 		this, &CustomGameDialog::balanceMinesQuantity);
-
-	connect(m_ui->buttonOk, &QPushButton::clicked, this, &QDialog::accept);
-	connect(m_ui->buttonCancel, &QPushButton::clicked, this, &QDialog::reject);
 }
 
 CustomGameDialog::~CustomGameDialog() = default;
