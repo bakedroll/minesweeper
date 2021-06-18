@@ -3,9 +3,9 @@
 
 #include "ui_MainWindow.h"
 
-#include <QDesktopWidget>
 #include <QInputDialog>
 #include <QTime>
+#include <QScreen>
 
 enum class FontWeight
 {
@@ -160,7 +160,13 @@ void MainWindow::loadDifficultyMode(int index)
     {
         adjustSize();
 
-        auto screenGeo = QApplication::desktop()->availableGeometry();
+        const auto screens = QGuiApplication::screens();
+        if (screens.empty())
+        {
+          return;
+        }
+
+        auto screenGeo = screens[0]->availableGeometry();
 
         auto geo = geometry();
         geo.moveCenter(screenGeo.center());
