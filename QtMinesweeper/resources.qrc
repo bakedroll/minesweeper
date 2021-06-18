@@ -9,5 +9,8 @@
         <file>Resources/smiley_angry_small.png</file>
         <file>Resources/randomize_small.png</file>
         <file>Resources/seed_small.png</file>
+
+        <file>translations/QtMinesweeper_en.qm</file>
+        <file>translations/QtMinesweeper_de.qm</file>
     </qresource>
 </RCC>
