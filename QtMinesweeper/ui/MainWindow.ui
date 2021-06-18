@@ -9,8 +9,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>841</width>
-    <height>622</height>
+    <width>364</width>
+    <height>390</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -67,8 +67,8 @@
         </property>
         <property name="sizeHint" stdset="0">
          <size>
-          <width>40</width>
-          <height>20</height>
+          <width>0</width>
+          <height>0</height>
          </size>
         </property>
        </spacer>
@@ -108,8 +108,8 @@
         </property>
         <property name="sizeHint" stdset="0">
          <size>
-          <width>40</width>
-          <height>20</height>
+          <width>0</width>
+          <height>0</height>
          </size>
         </property>
        </spacer>
@@ -154,7 +154,7 @@
        <widget class="QComboBox" name="comboBoxDifficultyMode">
         <property name="minimumSize">
          <size>
-          <width>140</width>
+          <width>120</width>
           <height>0</height>
          </size>
         </property>
@@ -176,8 +176,8 @@
         </property>
         <property name="sizeHint" stdset="0">
          <size>
-          <width>40</width>
-          <height>20</height>
+          <width>0</width>
+          <height>0</height>
          </size>
         </property>
        </spacer>
@@ -193,7 +193,7 @@
        <widget class="QSpinBox" name="spinBoxSeed">
         <property name="minimumSize">
          <size>
-          <width>140</width>
+          <width>90</width>
           <height>0</height>
          </size>
         </property>
@@ -258,8 +258,8 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>841</width>
-     <height>36</height>
+     <width>364</width>
+     <height>22</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuGame">

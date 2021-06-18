@@ -211,12 +211,14 @@ void MainWindow::makeMinefield()
     deleteLayout(m_ui->widgetContent->layout());
 
     auto layout = new QGridLayout();
+    layout->setSpacing(0);
+    layout->setContentsMargins(0, 0, 0, 0);
     m_ui->widgetContent->setLayout(layout);
 
     forEachField([this, layout](const Coordinate& coord)
     {
         auto button = new RightClickableButton();
-        button->setFixedSize(QSize(48, 48));
+        button->setFixedSize(QSize(42, 42));
         button->setCheckable(true);
         button->setFocusPolicy(Qt::NoFocus);
 
