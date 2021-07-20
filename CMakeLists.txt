@@ -15,5 +15,5 @@ add_subdirectory(QtMinesweeper)
 make_projects()
 
 if (MSVC)
-  qt6_copy_plugins(platforms/qwindows styles/qwindowsvistastyle)
+  qt_copy_plugins(platforms/qwindows styles/qwindowsvistastyle)
 endif()

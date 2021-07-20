@@ -14,5 +14,7 @@ add_include_directory(include)
 
 add_ui_directory(ui)
 
-add_ts_directory(translations)
 add_qrc_files(resources.qrc)
+
+enable_localized_languages(en de)
+set_ts_files_directory(translations)
